@@ -1,326 +1,414 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Divisas — MABED Distribuciones / Monex Feb–Abr 2026</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;padding:24px 28px;font-size:14px}
-  h1{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
-  .subtitle{font-size:12px;color:#888;margin-bottom:20px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MABED Distribuciones — Divisas &amp; Flujo Cambiario</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-fill:#E1F5EE;--teal-str:#0F6E56;--teal-txt:#085041;
+      --purple-fill:#EEEDFE;--purple-str:#534AB7;--purple-txt:#3C3489;
+      --blue-fill:#E6F1FB;--blue-str:#185FA5;--blue-txt:#0C447C;
+      --amber-fill:#FAEEDA;--amber-str:#854F0B;--amber-txt:#633806;
+      --gray-fill:#F1EFE8;--gray-str:#5F5E5A;--gray-txt:#444441;
+      --red-fill:#FCEBEB;--red-str:#A32D2D;--red-txt:#791F1F;
+      --bg:#F5F5F0;--border:#D0CFC8;--label:#999894;
+    }
+    body { font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:#1a1a1a; font-size:14px; }
 
-  /* KPI strip */
-  .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px}
-  .kpi{background:#E6F1FB;border-radius:10px;padding:12px 14px;text-align:center}
-  .kpi-val{font-size:15px;font-weight:700;color:#185FA5;line-height:1.2}
-  .kpi-lbl{font-size:10px;color:#666;margin-top:4px}
+    /* NAV */
+    .top-nav { background:#fff; border-bottom:1px solid var(--border); padding:0 28px; display:flex; align-items:center; position:sticky; top:0; z-index:100; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+    .nav-brand { font-size:13px; font-weight:700; color:#1a1a1a; padding:16px 0; margin-right:28px; white-space:nowrap; letter-spacing:-.2px; }
+    .nav-brand span { color:#185FA5; }
+    .nav-tabs { display:flex; }
+    .nav-tab { padding:18px 20px; font-size:12.5px; font-weight:500; color:#777; cursor:pointer; border-bottom:2.5px solid transparent; border-top:none; border-left:none; border-right:none; background:none; font-family:inherit; transition:all .18s; white-space:nowrap; }
+    .nav-tab:hover { color:#1a1a1a; }
+    .nav-tab.active { color:#185FA5; border-bottom-color:#185FA5; font-weight:600; }
 
-  /* Month cards */
-  .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-  .mcard{background:#fff;border:.5px solid #D0CFC8;border-radius:12px;overflow:hidden}
-  .mcard-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
-  .mcard-title{font-size:14px;font-weight:600}
-  .mcard-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
-  .mcard-body{padding:0 14px 10px}
-  .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid #E8E7E0;font-size:12px}
-  .row:last-child{border-bottom:none}
-  .rl{color:#777}
-  .rv{font-weight:500;color:#1a1a1a}
-  .rv-blue{font-weight:700;color:#185FA5;font-size:13px}
-  .rv-green{font-weight:500;color:#0F6E56}
-  .rv-orange{font-weight:500;color:#D85A30}
-  .row-hl{background:#EEF5FC;margin:0 -14px;padding:5px 14px;display:flex;justify-content:space-between;font-size:12px}
+    /* PAGES */
+    .page { display:none; padding:28px; }
+    .page.active { display:block; }
 
-  /* Section titles */
-  .sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#888;margin:20px 0 8px}
+    /* ── DASHBOARD ── */
+    .dash-h1 { font-size:20px; font-weight:700; margin-bottom:3px; }
+    .subtitle { font-size:12px; color:#888; margin-bottom:20px; }
+    .kpi-strip { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:22px; }
+    .kpi { background:#E6F1FB; border-radius:10px; padding:12px 14px; text-align:center; }
+    .kpi-val { font-size:15px; font-weight:700; color:#185FA5; line-height:1.2; }
+    .kpi-lbl { font-size:10px; color:#666; margin-top:4px; }
+    .month-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+    .mcard { background:#fff; border:.5px solid var(--border); border-radius:12px; overflow:hidden; }
+    .mcard-head { padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+    .mcard-title { font-size:14px; font-weight:600; }
+    .mcard-badge { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; }
+    .mcard-body { padding:0 14px 10px; }
+    .row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:.5px solid #E8E7E0; font-size:12px; }
+    .row:last-child { border-bottom:none; }
+    .rl { color:#777; }
+    .rv { font-weight:500; }
+    .rv-blue { font-weight:700; color:#185FA5; font-size:13px; }
+    .rv-green { font-weight:500; color:#0F6E56; }
+    .rv-orange { font-weight:500; color:#D85A30; }
+    .row-hl { background:#EEF5FC; margin:0 -14px; padding:5px 14px; display:flex; justify-content:space-between; font-size:12px; }
+    .sec { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:#888; margin:20px 0 8px; }
+    .chart-block { background:#fff; border:.5px solid var(--border); border-radius:12px; padding:16px; margin-bottom:14px; }
+    .chart-title { font-size:12px; font-weight:600; color:#444; margin-bottom:12px; }
+    .chart-wrap { position:relative; width:100%; }
+    .leg { display:flex; gap:16px; margin-bottom:10px; font-size:11px; color:#666; flex-wrap:wrap; }
+    .leg span { display:flex; align-items:center; gap:5px; }
+    .leg b { width:10px; height:10px; border-radius:2px; display:inline-block; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    .tbl-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th { background:#F1EFE8; font-weight:600; color:#666; padding:7px 10px; text-align:left; border-bottom:.5px solid var(--border); }
+    td { padding:6px 10px; border-bottom:.5px solid #EEECEA; }
+    tr:last-child td { border-bottom:none; }
+    tr:nth-child(even) td { background:#FAFAF8; }
+    .td-blue { font-weight:700; color:#185FA5; }
+    .td-green { font-weight:500; color:#0F6E56; }
+    td:not(:first-child),th:not(:first-child) { text-align:center; }
+    .hl-row td { background:#EEF5FC !important; }
+    .dash-note { background:#F1EFE8; border-radius:8px; padding:12px 14px; font-size:11px; color:#666; line-height:1.6; margin-top:16px; }
+    .chart-tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+    .ctab { font-size:11px; padding:5px 14px; border-radius:20px; border:.5px solid var(--border); background:transparent; cursor:pointer; color:#666; transition:all .15s; font-family:inherit; }
+    .ctab.on { background:#185FA5; color:#fff; border-color:#185FA5; }
+    .dash-footer { text-align:center; font-size:10px; color:#aaa; margin-top:24px; padding-top:16px; border-top:.5px solid var(--border); }
 
-  /* Charts */
-  .chart-block{background:#fff;border:.5px solid #D0CFC8;border-radius:12px;padding:16px;margin-bottom:14px}
-  .chart-title{font-size:12px;font-weight:600;color:#444;margin-bottom:12px}
-  .chart-wrap{position:relative;width:100%}
-  .leg{display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:#666;flex-wrap:wrap}
-  .leg span{display:flex;align-items:center;gap:5px}
-  .leg b{width:10px;height:10px;border-radius:2px;display:inline-block}
+    /* ── DIAGRAMA ── */
+    .diag-page { max-width:860px; margin:0 auto; }
+    .page-card { background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:36px; padding:36px 40px 40px; border:1px solid #E8E6E0; animation:fadeUp .45s ease both; }
+    .page-card:nth-child(2) { animation-delay:.1s; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .page-title { text-align:center; margin-bottom:28px; }
+    .page-badge { display:inline-block; background:#F0EEE8; border:1px solid #DDD9D0; border-radius:20px; padding:2px 12px; font-size:10px; color:var(--gray-txt); font-weight:600; margin-bottom:8px; font-family:'DM Mono',monospace; }
+    .page-title h2 { font-size:16px; font-weight:700; letter-spacing:-.2px; color:#1A1A18; line-height:1.4; }
+    .page-title p { font-size:11px; color:var(--label); margin-top:4px; }
+    .company-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:6px; position:relative; }
+    .company-row::before,.company-row::after { content:''; position:absolute; top:50%; height:1.5px; background:#BFBDBA; }
+    .company-row::before { left:calc(33.33% + 7px); width:calc(33.33% - 14px); }
+    .company-row::after  { left:calc(66.66% + 7px); width:calc(33.33% - 14px); }
+    .company-chip { border-radius:10px; padding:13px 14px; text-align:center; border:1.5px solid; position:relative; z-index:1; transition:transform .18s,box-shadow .18s; }
+    .company-chip:hover { transform:translateY(-2px); box-shadow:0 5px 16px rgba(0,0,0,.09); }
+    .company-chip .cname { font-size:13px; font-weight:700; display:block; }
+    .company-chip .crole { font-size:10.5px; opacity:.8; margin-top:2px; display:block; }
+    .chip-teal   { background:var(--teal-fill);   border-color:var(--teal-str);   color:var(--teal-txt); }
+    .chip-purple { background:var(--purple-fill); border-color:var(--purple-str); color:var(--purple-txt); }
+    .chip-blue   { background:var(--blue-fill);   border-color:var(--blue-str);   color:var(--blue-txt); }
+    .chip-amber  { background:var(--amber-fill);  border-color:var(--amber-str);  color:var(--amber-txt); }
+    .chip-gray   { background:var(--gray-fill);   border-color:var(--gray-str);   color:var(--gray-txt); }
+    .chip-red    { background:var(--red-fill);    border-color:var(--red-str);    color:var(--red-txt); }
+    .section-divider { display:flex; align-items:center; gap:10px; margin:24px 0 18px; }
+    .section-divider::before,.section-divider::after { content:''; flex:1; height:1px; border-top:1px dashed var(--border); }
+    .section-label { font-size:10px; font-weight:600; color:var(--label); white-space:nowrap; letter-spacing:.3px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+    .flow-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; position:relative; }
+    .flow-arrow-l,.flow-arrow-r { position:absolute; top:50%; transform:translateY(-50%); color:#BFBDBA; font-size:18px; z-index:2; pointer-events:none; }
+    .flow-arrow-l { left:calc(33.33% - 11px); }
+    .flow-arrow-r { left:calc(66.66% - 11px); }
+    .dbox { border-radius:10px; padding:13px 15px; text-align:center; border:1.5px solid; transition:transform .18s,box-shadow .18s; }
+    .dbox:hover { transform:translateY(-2px); box-shadow:0 5px 16px rgba(0,0,0,.09); }
+    .dbox .dtitle { font-size:12.5px; font-weight:700; display:block; }
+    .dbox .dsub   { font-size:11px; opacity:.85; margin-top:3px; display:block; line-height:1.4; }
+    .v-arrow { text-align:center; color:#BFBDBA; font-size:22px; margin:5px 0; }
+    .wide-wrap { display:flex; justify-content:center; }
+    .wide-box { width:370px; max-width:100%; border-radius:10px; padding:15px 22px; text-align:center; border:1.5px solid; transition:transform .18s,box-shadow .18s; }
+    .wide-box:hover { transform:translateY(-2px); box-shadow:0 5px 16px rgba(0,0,0,.09); }
+    .wide-box .wtitle { font-size:13px; font-weight:700; display:block; margin-bottom:5px; }
+    .wide-box .wsub   { font-size:11px; opacity:.9; display:block; line-height:1.6; }
+    .diag-note { text-align:center; font-size:11px; color:var(--label); margin-top:9px; font-style:italic; }
+    .sec3-two { display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:520px; margin:0 auto; position:relative; align-items:center; }
+    .sec3-arr { position:absolute; top:50%; left:calc(50% - 11px); transform:translateY(-50%); color:#BFBDBA; font-size:18px; pointer-events:none; z-index:2; }
+    .diag-legend { display:flex; gap:18px; justify-content:center; margin-top:32px; padding-top:18px; border-top:1px solid #EDEBE6; flex-wrap:wrap; }
+    .dl-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--gray-txt); }
+    .dl-dot { width:11px; height:11px; border-radius:3px; border:1.5px solid; flex-shrink:0; }
+    .diag-footer { text-align:center; font-size:10.5px; color:var(--label); margin-top:8px; }
 
-  /* Two-col layout */
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-
-  /* Tables */
-  .tbl-wrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:12px}
-  th{background:#F1EFE8;font-weight:600;color:#666;padding:7px 10px;text-align:left;border-bottom:.5px solid #D0CFC8}
-  td{padding:6px 10px;border-bottom:.5px solid #EEECEA;color:#1a1a1a}
-  tr:last-child td{border-bottom:none}
-  tr:nth-child(even) td{background:#FAFAF8}
-  .td-blue{font-weight:700;color:#185FA5}
-  .td-green{font-weight:500;color:#0F6E56}
-  td:not(:first-child){text-align:center}
-  th:not(:first-child){text-align:center}
-
-  /* TC highlight row */
-  .hl-row td{background:#EEF5FC!important}
-
-  /* Note */
-  .note{background:#F1EFE8;border-radius:8px;padding:12px 14px;font-size:11px;color:#666;line-height:1.6;margin-top:16px}
-
-  /* Tabs */
-  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-  .tab{font-size:11px;padding:5px 14px;border-radius:20px;border:.5px solid #D0CFC8;background:transparent;cursor:pointer;color:#666;transition:all .15s}
-  .tab.on{background:#185FA5;color:#fff;border-color:#185FA5}
-
-  .footer{text-align:center;font-size:10px;color:#aaa;margin-top:24px;padding-top:16px;border-top:.5px solid #D0CFC8}
-</style>
+    /* RESPONSIVE */
+    @media(max-width:680px){
+      .page{padding:16px}
+      .kpi-strip{grid-template-columns:repeat(3,1fr)}
+      .month-grid,.two-col{grid-template-columns:1fr}
+      .company-row,.flow-row{grid-template-columns:1fr}
+      .company-row::before,.company-row::after{display:none}
+      .flow-arrow-l,.flow-arrow-r,.sec3-arr{display:none}
+      .sec3-two{grid-template-columns:1fr}
+      .wide-box{width:100%}
+      .page-card{padding:20px 16px}
+    }
+  </style>
 </head>
 <body>
 
-<h1>Dashboard de divisas — MABED Distribuciones SA de CV</h1>
-<p class="subtitle">Banco Monex &nbsp;·&nbsp; Oficina Monterrey &nbsp;·&nbsp; Cuenta 6735 &nbsp;·&nbsp; Febrero – Abril 2026 &nbsp;·&nbsp; 181 comprobantes CFDI</p>
+<nav class="top-nav">
+  <div class="nav-brand">MABED <span>Distribuciones</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('dashboard',this)">📊 Dashboard de Divisas</button>
+    <button class="nav-tab" onclick="switchPage('diagrama',this)">🔄 Flujo Cambiario</button>
+  </div>
+</nav>
 
-<!-- KPI Strip -->
-<p class="sec">Resumen trimestral</p>
-<div class="kpi-strip">
-  <div class="kpi"><div class="kpi-val">181</div><div class="kpi-lbl">Total comprobantes</div></div>
-  <div class="kpi"><div class="kpi-val">16.08 M USD</div><div class="kpi-lbl">USD vendidos</div></div>
-  <div class="kpi"><div class="kpi-val">40,000 USD</div><div class="kpi-lbl">USD comprados</div></div>
-  <div class="kpi"><div class="kpi-val">$281 M MXN</div><div class="kpi-lbl">MXN intercambiado</div></div>
-  <div class="kpi"><div class="kpi-val">$17.195–17.766</div><div class="kpi-lbl">Rango TC ponderado</div></div>
-  <div class="kpi"><div class="kpi-val">$17.084–18.095</div><div class="kpi-lbl">Rango TC absoluto</div></div>
-</div>
+<!-- ══ DASHBOARD ══ -->
+<div id="page-dashboard" class="page active">
+  <h1 class="dash-h1">Dashboard de divisas — MABED Distribuciones SA de CV</h1>
+  <p class="subtitle">Banco Monex &nbsp;·&nbsp; Oficina Monterrey &nbsp;·&nbsp; Cuenta 6735 &nbsp;·&nbsp; Febrero – Abril 2026 &nbsp;·&nbsp; 181 comprobantes CFDI</p>
 
-<!-- Month cards -->
-<p class="sec">Resumen por mes</p>
-<div class="month-grid">
+  <p class="sec">Resumen trimestral</p>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-val">181</div><div class="kpi-lbl">Total comprobantes</div></div>
+    <div class="kpi"><div class="kpi-val">16.08 M USD</div><div class="kpi-lbl">USD vendidos</div></div>
+    <div class="kpi"><div class="kpi-val">40,000 USD</div><div class="kpi-lbl">USD comprados</div></div>
+    <div class="kpi"><div class="kpi-val">$281 M MXN</div><div class="kpi-lbl">MXN intercambiado</div></div>
+    <div class="kpi"><div class="kpi-val">$17.195–17.766</div><div class="kpi-lbl">Rango TC ponderado</div></div>
+    <div class="kpi"><div class="kpi-val">$17.084–18.095</div><div class="kpi-lbl">Rango TC absoluto</div></div>
+  </div>
 
-  <div class="mcard">
-    <div class="mcard-head" style="background:#E6F1FB">
-      <span class="mcard-title">Febrero 2026</span>
-      <span class="mcard-badge" style="background:#C5DCEF;color:#0C447C">18 días hábiles</span>
+  <p class="sec">Resumen por mes</p>
+  <div class="month-grid">
+    <div class="mcard">
+      <div class="mcard-head" style="background:#E6F1FB"><span class="mcard-title">Febrero 2026</span><span class="mcard-badge" style="background:#C5DCEF;color:#0C447C">18 días hábiles</span></div>
+      <div class="mcard-body">
+        <div class="row"><span class="rl">Operaciones totales</span><span class="rv">54</span></div>
+        <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
+        <div class="row"><span class="rl">Día más activo</span><span class="rv">24-feb (6 ops)</span></div>
+        <div class="row"><span class="rl">Día menos activo</span><span class="rv">13,18-20-feb (1 op)</span></div>
+        <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,555,000</span></div>
+        <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
+        <div class="row"><span class="rl">USD promedio / día</span><span class="rv">308,611</span></div>
+        <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">102,870</span></div>
+        <div class="row"><span class="rl">MXN total</span><span class="rv">$95,531,250</span></div>
+        <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$5,307,292</span></div>
+        <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.084</span></div>
+        <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.386</span></div>
+        <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.200</span></div>
+      </div>
+      <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.195</span></div>
     </div>
-    <div class="mcard-body">
-      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">54</span></div>
-      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
-      <div class="row"><span class="rl">Día más activo</span><span class="rv">24-feb (6 ops)</span></div>
-      <div class="row"><span class="rl">Día menos activo</span><span class="rv">13,18-20-feb (1 op)</span></div>
-      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,555,000</span></div>
-      <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
-      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">308,611</span></div>
-      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">102,870</span></div>
-      <div class="row"><span class="rl">MXN total</span><span class="rv">$95,531,250</span></div>
-      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$5,307,292</span></div>
-      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.084</span></div>
-      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.386</span></div>
-      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.200</span></div>
+    <div class="mcard">
+      <div class="mcard-head" style="background:#FAEEDA"><span class="mcard-title">Marzo 2026</span><span class="mcard-badge" style="background:#F0D9A8;color:#633806">21 días hábiles</span></div>
+      <div class="mcard-body">
+        <div class="row"><span class="rl">Operaciones totales</span><span class="rv">63</span></div>
+        <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
+        <div class="row"><span class="rl">Día más activo</span><span class="rv">03-mar (5 ops)</span></div>
+        <div class="row"><span class="rl">Día menos activo</span><span class="rv">04-mar (1 op)</span></div>
+        <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,383,000</span></div>
+        <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
+        <div class="row"><span class="rl">USD promedio / día</span><span class="rv">256,333</span></div>
+        <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">85,444</span></div>
+        <div class="row"><span class="rl">MXN total</span><span class="rv">$95,637,170</span></div>
+        <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,554,151</span></div>
+        <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.307</span></div>
+        <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$18.095</span></div>
+        <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.770</span></div>
+      </div>
+      <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.766</span></div>
     </div>
-    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.195</span></div>
-  </div>
-
-  <div class="mcard">
-    <div class="mcard-head" style="background:#FAEEDA">
-      <span class="mcard-title">Marzo 2026</span>
-      <span class="mcard-badge" style="background:#F0D9A8;color:#633806">21 días hábiles</span>
-    </div>
-    <div class="mcard-body">
-      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">63</span></div>
-      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
-      <div class="row"><span class="rl">Día más activo</span><span class="rv">03-mar (5 ops)</span></div>
-      <div class="row"><span class="rl">Día menos activo</span><span class="rv">04-mar (1 op)</span></div>
-      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,383,000</span></div>
-      <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
-      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">256,333</span></div>
-      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">85,444</span></div>
-      <div class="row"><span class="rl">MXN total</span><span class="rv">$95,637,170</span></div>
-      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,554,151</span></div>
-      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.307</span></div>
-      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$18.095</span></div>
-      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.770</span></div>
-    </div>
-    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.766</span></div>
-  </div>
-
-  <div class="mcard">
-    <div class="mcard-head" style="background:#E1F5EE">
-      <span class="mcard-title">Abril 2026</span>
-      <span class="mcard-badge" style="background:#B8E8D5;color:#085041">20 días hábiles</span>
-    </div>
-    <div class="mcard-body">
-      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">64</span></div>
-      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.2</span></div>
-      <div class="row"><span class="rl">Día más activo</span><span class="rv">27-abr (8 ops)</span></div>
-      <div class="row"><span class="rl">Día menos activo</span><span class="rv">17-abr (3 ops)</span></div>
-      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,143,000</span></div>
-      <div class="row"><span class="rl">USD comprados</span><span class="rv">40,000</span></div>
-      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">257,150</span></div>
-      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">80,985</span></div>
-      <div class="row"><span class="rl">MXN total</span><span class="rv">$89,875,148</span></div>
-      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,493,757</span></div>
-      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.231</span></div>
-      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.804</span></div>
-      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.370</span></div>
-    </div>
-    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.365</span></div>
-  </div>
-
-</div>
-
-<!-- Charts with tabs -->
-<p class="sec">Gráficas</p>
-<div class="tabs">
-  <button class="tab on" onclick="showTab('ops')">Operaciones por día</button>
-  <button class="tab" onclick="showTab('vol')">Volumen USD por día</button>
-  <button class="tab" onclick="showTab('tc')">Tipo de cambio</button>
-  <button class="tab" onclick="showTab('mvol')">Volumen mensual</button>
-</div>
-
-<div id="tab-ops" class="chart-block">
-  <div class="chart-title">Operaciones por día hábil — los tres meses</div>
-  <div class="leg">
-    <span><b style="background:#185FA5"></b>Febrero</span>
-    <span><b style="background:#BA7517"></b>Marzo</span>
-    <span><b style="background:#1D9E75"></b>Abril</span>
-  </div>
-  <div class="chart-wrap" style="height:260px"><canvas id="cOps"></canvas></div>
-</div>
-
-<div id="tab-vol" class="chart-block" style="display:none">
-  <div class="chart-title">Volumen USD vendido por día hábil (miles USD)</div>
-  <div class="leg">
-    <span><b style="background:#185FA5"></b>Febrero</span>
-    <span><b style="background:#BA7517"></b>Marzo</span>
-    <span><b style="background:#1D9E75"></b>Abril</span>
-  </div>
-  <div class="chart-wrap" style="height:260px"><canvas id="cVol"></canvas></div>
-</div>
-
-<div id="tab-tc" class="chart-block" style="display:none">
-  <div class="chart-title">TC ponderado por USD vs promedio simple</div>
-  <div class="leg">
-    <span><b style="background:#888780"></b>TC simple</span>
-    <span><b style="background:#185FA5"></b>TC ponderado</span>
-  </div>
-  <div class="chart-wrap" style="height:260px"><canvas id="cTc"></canvas></div>
-</div>
-
-<div id="tab-mvol" class="chart-block" style="display:none">
-  <div class="chart-title">Volumen mensual total (millones USD)</div>
-  <div class="leg">
-    <span><b style="background:#185FA5"></b>USD vendidos</span>
-    <span><b style="background:#1D9E75"></b>USD comprados</span>
-  </div>
-  <div class="chart-wrap" style="height:260px"><canvas id="cMvol"></canvas></div>
-</div>
-
-<!-- Tables -->
-<p class="sec">Comparativo de indicadores</p>
-<div class="two-col">
-  <div class="chart-block">
-    <div class="chart-title">TC simple vs ponderado</div>
-    <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
-      <tbody>
-        <tr><td>TC simple</td><td>$17.200</td><td>$17.770</td><td>$17.370</td></tr>
-        <tr class="hl-row"><td>TC ponderado</td><td class="td-blue">$17.195</td><td class="td-blue">$17.766</td><td class="td-blue">$17.365</td></tr>
-        <tr><td>Diferencia / USD</td><td class="td-green">−$0.005</td><td class="td-green">−$0.004</td><td class="td-green">−$0.005</td></tr>
-        <tr><td>Impacto acum. MXN</td><td class="td-green">−$27,750</td><td class="td-green">−$21,532</td><td class="td-green">−$25,715</td></tr>
-      </tbody>
-    </table>
+    <div class="mcard">
+      <div class="mcard-head" style="background:#E1F5EE"><span class="mcard-title">Abril 2026</span><span class="mcard-badge" style="background:#B8E8D5;color:#085041">20 días hábiles</span></div>
+      <div class="mcard-body">
+        <div class="row"><span class="rl">Operaciones totales</span><span class="rv">64</span></div>
+        <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.2</span></div>
+        <div class="row"><span class="rl">Día más activo</span><span class="rv">27-abr (8 ops)</span></div>
+        <div class="row"><span class="rl">Día menos activo</span><span class="rv">17-abr (3 ops)</span></div>
+        <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,143,000</span></div>
+        <div class="row"><span class="rl">USD comprados</span><span class="rv">40,000</span></div>
+        <div class="row"><span class="rl">USD promedio / día</span><span class="rv">257,150</span></div>
+        <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">80,985</span></div>
+        <div class="row"><span class="rl">MXN total</span><span class="rv">$89,875,135</span></div>
+        <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,493,757</span></div>
+        <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.109</span></div>
+        <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.648</span></div>
+        <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.370</span></div>
+      </div>
+      <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.365</span></div>
     </div>
   </div>
-  <div class="chart-block">
-    <div class="chart-title">Promedios diarios por mes</div>
-    <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
-      <tbody>
-        <tr><td>Operaciones / día</td><td>3.0</td><td>3.0</td><td>3.2</td></tr>
-        <tr><td>USD vendidos / día</td><td>308,611</td><td>256,333</td><td>257,150</td></tr>
-        <tr><td>MXN / día</td><td>$5,307,292</td><td>$4,554,151</td><td>$4,493,757</td></tr>
-        <tr><td>USD prom. / op.</td><td>102,870</td><td>85,444</td><td>80,985</td></tr>
-        <tr><td>Días hábiles</td><td>18</td><td>21</td><td>20</td></tr>
-        <tr><td>Total operaciones</td><td>54</td><td>63</td><td>64</td></tr>
-      </tbody>
-    </table>
+
+  <p class="sec">Gráficas</p>
+  <div class="chart-tabs">
+    <button class="ctab on" onclick="showTab('ops')">Ops / día hábil</button>
+    <button class="ctab"    onclick="showTab('vol')">Volumen USD</button>
+    <button class="ctab"    onclick="showTab('tc')">TC simple vs ponderado</button>
+    <button class="ctab"    onclick="showTab('mvol')">Volumen mensual</button>
+  </div>
+  <div id="tab-ops" class="chart-block">
+    <div class="chart-title">Operaciones por día hábil — los tres meses</div>
+    <div class="leg"><span><b style="background:#185FA5"></b>Febrero</span><span><b style="background:#BA7517"></b>Marzo</span><span><b style="background:#1D9E75"></b>Abril</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="cOps"></canvas></div>
+  </div>
+  <div id="tab-vol" class="chart-block" style="display:none">
+    <div class="chart-title">Volumen USD vendido por día hábil (miles USD)</div>
+    <div class="leg"><span><b style="background:#185FA5"></b>Febrero</span><span><b style="background:#BA7517"></b>Marzo</span><span><b style="background:#1D9E75"></b>Abril</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="cVol"></canvas></div>
+  </div>
+  <div id="tab-tc" class="chart-block" style="display:none">
+    <div class="chart-title">TC ponderado por USD vs promedio simple</div>
+    <div class="leg"><span><b style="background:#888780"></b>TC simple</span><span><b style="background:#185FA5"></b>TC ponderado</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="cTc"></canvas></div>
+  </div>
+  <div id="tab-mvol" class="chart-block" style="display:none">
+    <div class="chart-title">Volumen mensual total (millones USD)</div>
+    <div class="leg"><span><b style="background:#185FA5"></b>USD vendidos</span><span><b style="background:#1D9E75"></b>USD comprados</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="cMvol"></canvas></div>
+  </div>
+
+  <p class="sec">Comparativo de indicadores</p>
+  <div class="two-col">
+    <div class="chart-block">
+      <div class="chart-title">TC simple vs ponderado</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
+        <tbody>
+          <tr><td>TC simple</td><td>$17.200</td><td>$17.770</td><td>$17.370</td></tr>
+          <tr class="hl-row"><td>TC ponderado</td><td class="td-blue">$17.195</td><td class="td-blue">$17.766</td><td class="td-blue">$17.365</td></tr>
+          <tr><td>Diferencia / USD</td><td class="td-green">−$0.005</td><td class="td-green">−$0.004</td><td class="td-green">−$0.005</td></tr>
+          <tr><td>Impacto acum. MXN</td><td class="td-green">−$27,750</td><td class="td-green">−$21,532</td><td class="td-green">−$25,715</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Promedios diarios por mes</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
+        <tbody>
+          <tr><td>Operaciones / día</td><td>3.0</td><td>3.0</td><td>3.2</td></tr>
+          <tr><td>USD vendidos / día</td><td>308,611</td><td>256,333</td><td>257,150</td></tr>
+          <tr><td>MXN / día</td><td>$5,307,292</td><td>$4,554,151</td><td>$4,493,757</td></tr>
+          <tr><td>USD prom. / op.</td><td>102,870</td><td>85,444</td><td>80,985</td></tr>
+          <tr><td>Días hábiles</td><td>18</td><td>21</td><td>20</td></tr>
+          <tr><td>Total operaciones</td><td>54</td><td>63</td><td>64</td></tr>
+        </tbody>
+      </table></div>
     </div>
   </div>
+
+  <div class="dash-note"><strong>Nota metodológica:</strong> El TC ponderado se calcula como <em>Σ(TC × USD) / Σ(USD)</em> de cada operación del mes, reflejando el tipo de cambio efectivo real según el tamaño de cada transacción. El TC simple es la media aritmética de los tipos de cambio sin ponderar por monto. La diferencia acumulada representa el impacto monetario entre ambos métodos sobre el volumen total mensual.</div>
+  <p class="dash-footer">MABED Distribuciones SA de CV &nbsp;·&nbsp; MDI2208119R1 &nbsp;·&nbsp; Banco Monex Monterrey &nbsp;·&nbsp; 181 comprobantes CFDI &nbsp;·&nbsp; Feb–Abr 2026</p>
 </div>
 
-<div class="note">
-  <strong>Nota metodológica:</strong> El TC ponderado se calcula como <em>Σ(TC × USD) / Σ(USD)</em> de cada operación del mes, 
-  reflejando el tipo de cambio efectivo real según el tamaño de cada transacción. El TC simple es la media aritmética 
-  de los tipos de cambio sin ponderar por monto. La diferencia acumulada representa el impacto monetario entre 
-  ambos métodos sobre el volumen total mensual.
-</div>
+<!-- ══ DIAGRAMA ══ -->
+<div id="page-diagrama" class="page">
+<div class="diag-page">
 
-<p class="footer">MABED Distribuciones SA de CV &nbsp;·&nbsp; MDI2208119R1 &nbsp;·&nbsp; Banco Monex Monterrey &nbsp;·&nbsp; 181 comprobantes CFDI &nbsp;·&nbsp; Feb–Abr 2026</p>
+  <!-- Card 1 -->
+  <div class="page-card">
+    <div class="page-title">
+      <div class="page-badge">Sección 1 / 2</div>
+      <h2>Ganancia / Pérdida Cambiaria Contable<br>SABEAMEX · MABED · 2FRONTERAS</h2>
+      <p>Grupo de empresas relacionadas — Diagrama contable (NIF / IFRS)</p>
+    </div>
+    <div class="company-row">
+      <div class="company-chip chip-teal"><span class="cname">SABEAMEX</span><span class="crole">Compradora — México</span></div>
+      <div class="company-chip chip-purple"><span class="cname">MABED</span><span class="crole">Exportadora — México</span></div>
+      <div class="company-chip chip-blue"><span class="cname">2FRONTERAS</span><span class="crole">Importadora — EE. UU.</span></div>
+    </div>
+    <div class="section-divider"><span class="section-label">① Flujo de Pago Intercompany</span></div>
+    <div class="flow-row">
+      <div class="dbox chip-teal"><span class="dtitle">SABEAMEX factura</span><span class="dsub">a MABED en MXN</span></div>
+      <div class="dbox chip-purple"><span class="dtitle">MABED factura</span><span class="dsub">a 2FRONTERAS en USD</span></div>
+      <div class="dbox chip-blue"><span class="dtitle">2FRONTERAS factura</span><span class="dsub">y cobra en USD</span></div>
+      <span class="flow-arrow-l">→</span><span class="flow-arrow-r">→</span>
+    </div>
+    <div class="section-divider"><span class="section-label">② Ganancia / Pérdida Cambiaria Contable (NIF / IFRS)</span></div>
+    <div class="flow-row">
+      <div class="dbox chip-teal"><span class="dtitle">SABEAMEX</span><span class="dsub">Factura y cobra en MXN<br>Sin pérdida / ganancia cambiaria</span></div>
+      <div class="dbox chip-purple"><span class="dtitle">MABED — Cta. x cobrar USD</span><span class="dsub">Revalúa al TC de cierre</span></div>
+      <div class="dbox chip-blue"><span class="dtitle">2FRONTERAS</span><span class="dsub">Factura y cobra en USD<br>Sin pérdida / ganancia cambiaria</span></div>
+    </div>
+    <div class="v-arrow">↓</div>
+    <div class="wide-wrap">
+      <div class="wide-box chip-amber">
+        <span class="wtitle">Resultado cambiario contable</span>
+        <span class="wsub">USD sube &nbsp;→&nbsp; Ganancia cambiaria en MABED<br>USD baja &nbsp;→&nbsp; Pérdida cambiaria en MABED</span>
+      </div>
+    </div>
+    <p class="diag-note">⚠ Solo afecta el estado de resultados, NO el efectivo</p>
+    <div class="diag-legend">
+      <div class="dl-item"><div class="dl-dot" style="background:var(--teal-fill);border-color:var(--teal-str)"></div>SABEAMEX</div>
+      <div class="dl-item"><div class="dl-dot" style="background:var(--purple-fill);border-color:var(--purple-str)"></div>MABED</div>
+      <div class="dl-item"><div class="dl-dot" style="background:var(--blue-fill);border-color:var(--blue-str)"></div>2FRONTERAS</div>
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="page-card">
+    <div class="page-title">
+      <div class="page-badge">Sección 2 / 2</div>
+      <h2>Ganancia / Pérdida Cambiaria en Flujo de Efectivo<br>SABEAMEX · MABED · 2FRONTERAS</h2>
+      <p>Grupo de empresas relacionadas — Impacto real en el efectivo</p>
+    </div>
+    <div class="company-row">
+      <div class="company-chip chip-teal"><span class="cname">SABEAMEX</span><span class="crole">Compradora — México</span></div>
+      <div class="company-chip chip-purple"><span class="cname">MABED</span><span class="crole">Exportadora — México</span></div>
+      <div class="company-chip chip-blue"><span class="cname">2FRONTERAS</span><span class="crole">Importadora — EE. UU.</span></div>
+    </div>
+    <div class="section-divider"><span class="section-label">③ Pérdida de Flujo Real — Venta de Dólares</span></div>
+    <div class="sec3-two">
+      <div class="dbox chip-purple"><span class="dtitle">MABED recibe USD</span><span class="dsub">Vende a casa de cambio<br>→ convierte a MXN</span></div>
+      <div class="dbox chip-blue"><span class="dtitle">2FRONTERAS paga USD</span><span class="dsub">a MABED en cuenta<br>bancaria en USD</span></div>
+      <span class="sec3-arr">←</span>
+    </div>
+    <div class="v-arrow">↓</div>
+    <div class="wide-wrap">
+      <div class="wide-box chip-gray"><span class="wtitle">Banco / Casa de cambio aplica TC compra</span><span class="wsub">Diferente al TC de facturación</span></div>
+    </div>
+    <div class="v-arrow">↓</div>
+    <div class="wide-wrap">
+      <div class="wide-box chip-red"><span class="wtitle">Pérdida de flujo real en MABED</span><span class="wsub">Diferencia TC factura vs TC casa de cambio<br>Sí impacta el efectivo recibido en MXN</span></div>
+    </div>
+    <div class="v-arrow">↓</div>
+    <div class="wide-wrap">
+      <div class="wide-box chip-purple"><span class="wtitle">MABED paga a SABEAMEX en MXN</span><span class="wsub">Liquidación intercompany</span></div>
+    </div>
+    <div class="v-arrow">↓</div>
+    <div class="wide-wrap">
+      <div class="wide-box chip-teal"><span class="wtitle">SABEAMEX paga a proveedores en MXN</span><span class="wsub">Cierre del ciclo en pesos</span></div>
+    </div>
+    <div class="diag-legend">
+      <div class="dl-item"><div class="dl-dot" style="background:var(--teal-fill);border-color:var(--teal-str)"></div>SABEAMEX</div>
+      <div class="dl-item"><div class="dl-dot" style="background:var(--purple-fill);border-color:var(--purple-str)"></div>MABED</div>
+      <div class="dl-item"><div class="dl-dot" style="background:var(--blue-fill);border-color:var(--blue-str)"></div>2FRONTERAS</div>
+    </div>
+  </div>
+
+  <p class="diag-footer">Diagrama generado con Claude · Grupo SABEAMEX / MABED / 2FRONTERAS</p>
+</div>
+</div>
 
 <script>
+function switchPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  ['ops','vol','tc','mvol'].forEach(id => {
+    document.getElementById('tab-' + id).style.display = id === t ? 'block' : 'none';
+  });
+  document.querySelectorAll('.ctab').forEach((b, i) => {
+    b.classList.toggle('on', ['ops','vol','tc','mvol'][i] === t);
+  });
+}
+
 const feb_ops=[4,4,4,3,4,4,2,2,1,3,1,1,1,2,6,4,4,4];
 const mar_ops=[3,5,1,4,4,4,4,4,3,3,3,2,2,4,2,2,2,3,3,2,4];
 const abr_ops=[3,4,3,3,2,2,3,2,3,3,3,2,3,3,3,2,8,4,3,4];
 const feb_vol=[480,290,250,300,270,240,300,230,345,410,280,180,150,100,420,280,560,470];
 const mar_vol=[220,380,100,230,265,280,350,230,260,250,320,300,230,300,180,250,270,350,325,250,190];
 const abr_vol=[340,500,185,240,140,150,305,235,200,204,60,200,240,150,200,200,550,310,225,330];
-
 const ML=21;
 const pad=a=>{const r=[...a];while(r.length<ML)r.push(null);return r;};
 const labels=Array.from({length:ML},(_,i)=>`D${i+1}`);
-
-const baseOpts={responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{display:false}},
-  scales:{x:{ticks:{font:{size:10},color:'#888'}},
-          y:{grid:{color:'#E8E7E0'},ticks:{color:'#888'}}}};
-
-new Chart(document.getElementById('cOps'),{
-  type:'bar',data:{labels,datasets:[
-    {label:'Feb',data:pad(feb_ops),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},
-    {label:'Mar',data:pad(mar_ops),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},
-    {label:'Abr',data:pad(abr_ops),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2},
-  ]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,stepSize:1}}}}
-});
-
-new Chart(document.getElementById('cVol'),{
-  type:'bar',data:{labels,datasets:[
-    {label:'Feb',data:pad(feb_vol),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},
-    {label:'Mar',data:pad(mar_vol),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},
-    {label:'Abr',data:pad(abr_vol),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2},
-  ]},options:{...baseOpts,scales:{...baseOpts.scales,
-    y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'K'}}}}
-});
-
-new Chart(document.getElementById('cTc'),{
-  type:'bar',
-  data:{labels:['Febrero','Marzo','Abril'],datasets:[
-    {label:'TC simple',   data:[17.200,17.770,17.370],backgroundColor:'rgba(136,135,128,.55)',borderRadius:4},
-    {label:'TC ponderado',data:[17.195,17.766,17.365],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4},
-  ]},
-  options:{...baseOpts,scales:{...baseOpts.scales,
-    y:{min:17.0,max:18.2,grid:{color:'#E8E7E0'},
-       ticks:{color:'#888',callback:v=>'$'+v.toFixed(3)}}},
-    plugins:{...baseOpts.plugins,
-      datalabels:{display:false},
-      tooltip:{callbacks:{label:ctx=>`$${ctx.raw.toFixed(3)}`}}}}
-});
-
-new Chart(document.getElementById('cMvol'),{
-  type:'bar',
-  data:{labels:['Febrero','Marzo','Abril'],datasets:[
-    {label:'USD vendidos', data:[5.555,5.383,5.143],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4},
-    {label:'USD comprados',data:[0,0,0.040],backgroundColor:'rgba(29,158,117,.85)',borderRadius:4},
-  ]},
-  options:{...baseOpts,scales:{...baseOpts.scales,
-    y:{grid:{color:'#E8E7E0'},ticks:{color:'#888',callback:v=>v.toFixed(2)+'M'}}}}
-});
-
-function showTab(t){
-  ['ops','vol','tc','mvol'].forEach(id=>{
-    document.getElementById('tab-'+id).style.display=id===t?'block':'none';
-  });
-  document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on',['ops','vol','tc','mvol'][i]===t);
-  });
-}
+const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},color:'#888'}},y:{grid:{color:'#E8E7E0'},ticks:{color:'#888'}}}};
+new Chart(document.getElementById('cOps'),{type:'bar',data:{labels,datasets:[{label:'Feb',data:pad(feb_ops),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},{label:'Mar',data:pad(mar_ops),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},{label:'Abr',data:pad(abr_ops),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2}]},options:{...base,scales:{...base.scales,y:{...base.scales.y,ticks:{...base.scales.y.ticks,stepSize:1}}}}});
+new Chart(document.getElementById('cVol'),{type:'bar',data:{labels,datasets:[{label:'Feb',data:pad(feb_vol),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},{label:'Mar',data:pad(mar_vol),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},{label:'Abr',data:pad(abr_vol),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2}]},options:{...base,scales:{...base.scales,y:{...base.scales.y,ticks:{...base.scales.y.ticks,callback:v=>v+'K'}}}}});
+new Chart(document.getElementById('cTc'),{type:'bar',data:{labels:['Febrero','Marzo','Abril'],datasets:[{label:'TC simple',data:[17.200,17.770,17.370],backgroundColor:'rgba(136,135,128,.55)',borderRadius:4},{label:'TC ponderado',data:[17.195,17.766,17.365],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4}]},options:{...base,scales:{...base.scales,y:{min:17.0,max:18.2,grid:{color:'#E8E7E0'},ticks:{color:'#888',callback:v=>'$'+v.toFixed(3)}}},plugins:{...base.plugins,tooltip:{callbacks:{label:ctx=>`$${ctx.raw.toFixed(3)}`}}}}});
+new Chart(document.getElementById('cMvol'),{type:'bar',data:{labels:['Febrero','Marzo','Abril'],datasets:[{label:'USD vendidos',data:[5.555,5.383,5.143],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4},{label:'USD comprados',data:[0,0,0.040],backgroundColor:'rgba(29,158,117,.85)',borderRadius:4}]},options:{...base,scales:{...base.scales,y:{grid:{color:'#E8E7E0'},ticks:{color:'#888',callback:v=>v.toFixed(2)+'M'}}}}});
 </script>
 </body>
 </html>
