@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Divisas — MABED Distribuciones / Monex Feb–Abr 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;padding:24px 28px;font-size:14px}
+  h1{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+  .subtitle{font-size:12px;color:#888;margin-bottom:20px}
+
+  /* KPI strip */
+  .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px}
+  .kpi{background:#E6F1FB;border-radius:10px;padding:12px 14px;text-align:center}
+  .kpi-val{font-size:15px;font-weight:700;color:#185FA5;line-height:1.2}
+  .kpi-lbl{font-size:10px;color:#666;margin-top:4px}
+
+  /* Month cards */
+  .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .mcard{background:#fff;border:.5px solid #D0CFC8;border-radius:12px;overflow:hidden}
+  .mcard-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+  .mcard-title{font-size:14px;font-weight:600}
+  .mcard-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+  .mcard-body{padding:0 14px 10px}
+  .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid #E8E7E0;font-size:12px}
+  .row:last-child{border-bottom:none}
+  .rl{color:#777}
+  .rv{font-weight:500;color:#1a1a1a}
+  .rv-blue{font-weight:700;color:#185FA5;font-size:13px}
+  .rv-green{font-weight:500;color:#0F6E56}
+  .rv-orange{font-weight:500;color:#D85A30}
+  .row-hl{background:#EEF5FC;margin:0 -14px;padding:5px 14px;display:flex;justify-content:space-between;font-size:12px}
+
+  /* Section titles */
+  .sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#888;margin:20px 0 8px}
+
+  /* Charts */
+  .chart-block{background:#fff;border:.5px solid #D0CFC8;border-radius:12px;padding:16px;margin-bottom:14px}
+  .chart-title{font-size:12px;font-weight:600;color:#444;margin-bottom:12px}
+  .chart-wrap{position:relative;width:100%}
+  .leg{display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:#666;flex-wrap:wrap}
+  .leg span{display:flex;align-items:center;gap:5px}
+  .leg b{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  /* Two-col layout */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+  /* Tables */
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#F1EFE8;font-weight:600;color:#666;padding:7px 10px;text-align:left;border-bottom:.5px solid #D0CFC8}
+  td{padding:6px 10px;border-bottom:.5px solid #EEECEA;color:#1a1a1a}
+  tr:last-child td{border-bottom:none}
+  tr:nth-child(even) td{background:#FAFAF8}
+  .td-blue{font-weight:700;color:#185FA5}
+  .td-green{font-weight:500;color:#0F6E56}
+  td:not(:first-child){text-align:center}
+  th:not(:first-child){text-align:center}
+
+  /* TC highlight row */
+  .hl-row td{background:#EEF5FC!important}
+
+  /* Note */
+  .note{background:#F1EFE8;border-radius:8px;padding:12px 14px;font-size:11px;color:#666;line-height:1.6;margin-top:16px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{font-size:11px;padding:5px 14px;border-radius:20px;border:.5px solid #D0CFC8;background:transparent;cursor:pointer;color:#666;transition:all .15s}
+  .tab.on{background:#185FA5;color:#fff;border-color:#185FA5}
+
+  .footer{text-align:center;font-size:10px;color:#aaa;margin-top:24px;padding-top:16px;border-top:.5px solid #D0CFC8}
+</style>
+</head>
+<body>
+
+<h1>Dashboard de divisas — MABED Distribuciones SA de CV</h1>
+<p class="subtitle">Banco Monex &nbsp;·&nbsp; Oficina Monterrey &nbsp;·&nbsp; Cuenta 6735 &nbsp;·&nbsp; Febrero – Abril 2026 &nbsp;·&nbsp; 181 comprobantes CFDI</p>
+
+<!-- KPI Strip -->
+<p class="sec">Resumen trimestral</p>
+<div class="kpi-strip">
+  <div class="kpi"><div class="kpi-val">181</div><div class="kpi-lbl">Total comprobantes</div></div>
+  <div class="kpi"><div class="kpi-val">16.08 M USD</div><div class="kpi-lbl">USD vendidos</div></div>
+  <div class="kpi"><div class="kpi-val">40,000 USD</div><div class="kpi-lbl">USD comprados</div></div>
+  <div class="kpi"><div class="kpi-val">$281 M MXN</div><div class="kpi-lbl">MXN intercambiado</div></div>
+  <div class="kpi"><div class="kpi-val">$17.195–17.766</div><div class="kpi-lbl">Rango TC ponderado</div></div>
+  <div class="kpi"><div class="kpi-val">$17.084–18.095</div><div class="kpi-lbl">Rango TC absoluto</div></div>
+</div>
+
+<!-- Month cards -->
+<p class="sec">Resumen por mes</p>
+<div class="month-grid">
+
+  <div class="mcard">
+    <div class="mcard-head" style="background:#E6F1FB">
+      <span class="mcard-title">Febrero 2026</span>
+      <span class="mcard-badge" style="background:#C5DCEF;color:#0C447C">18 días hábiles</span>
+    </div>
+    <div class="mcard-body">
+      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">54</span></div>
+      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
+      <div class="row"><span class="rl">Día más activo</span><span class="rv">24-feb (6 ops)</span></div>
+      <div class="row"><span class="rl">Día menos activo</span><span class="rv">13,18-20-feb (1 op)</span></div>
+      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,555,000</span></div>
+      <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
+      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">308,611</span></div>
+      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">102,870</span></div>
+      <div class="row"><span class="rl">MXN total</span><span class="rv">$95,531,250</span></div>
+      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$5,307,292</span></div>
+      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.084</span></div>
+      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.386</span></div>
+      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.200</span></div>
+    </div>
+    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.195</span></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-head" style="background:#FAEEDA">
+      <span class="mcard-title">Marzo 2026</span>
+      <span class="mcard-badge" style="background:#F0D9A8;color:#633806">21 días hábiles</span>
+    </div>
+    <div class="mcard-body">
+      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">63</span></div>
+      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.0</span></div>
+      <div class="row"><span class="rl">Día más activo</span><span class="rv">03-mar (5 ops)</span></div>
+      <div class="row"><span class="rl">Día menos activo</span><span class="rv">04-mar (1 op)</span></div>
+      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,383,000</span></div>
+      <div class="row"><span class="rl">USD comprados</span><span class="rv">—</span></div>
+      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">256,333</span></div>
+      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">85,444</span></div>
+      <div class="row"><span class="rl">MXN total</span><span class="rv">$95,637,170</span></div>
+      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,554,151</span></div>
+      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.307</span></div>
+      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$18.095</span></div>
+      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.770</span></div>
+    </div>
+    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.766</span></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-head" style="background:#E1F5EE">
+      <span class="mcard-title">Abril 2026</span>
+      <span class="mcard-badge" style="background:#B8E8D5;color:#085041">20 días hábiles</span>
+    </div>
+    <div class="mcard-body">
+      <div class="row"><span class="rl">Operaciones totales</span><span class="rv">64</span></div>
+      <div class="row"><span class="rl">Ops promedio / día</span><span class="rv">3.2</span></div>
+      <div class="row"><span class="rl">Día más activo</span><span class="rv">27-abr (8 ops)</span></div>
+      <div class="row"><span class="rl">Día menos activo</span><span class="rv">17-abr (3 ops)</span></div>
+      <div class="row"><span class="rl">USD vendidos</span><span class="rv">5,143,000</span></div>
+      <div class="row"><span class="rl">USD comprados</span><span class="rv">40,000</span></div>
+      <div class="row"><span class="rl">USD promedio / día</span><span class="rv">257,150</span></div>
+      <div class="row"><span class="rl">USD promedio / op.</span><span class="rv">80,985</span></div>
+      <div class="row"><span class="rl">MXN total</span><span class="rv">$89,875,148</span></div>
+      <div class="row"><span class="rl">MXN promedio / día</span><span class="rv">$4,493,757</span></div>
+      <div class="row"><span class="rl">TC mínimo</span><span class="rv rv-green">$17.231</span></div>
+      <div class="row"><span class="rl">TC máximo</span><span class="rv rv-orange">$17.804</span></div>
+      <div class="row"><span class="rl">TC promedio simple</span><span class="rv">$17.370</span></div>
+    </div>
+    <div class="row-hl"><span style="font-weight:600">TC ponderado por USD</span><span class="rv-blue">$17.365</span></div>
+  </div>
+
+</div>
+
+<!-- Charts with tabs -->
+<p class="sec">Gráficas</p>
+<div class="tabs">
+  <button class="tab on" onclick="showTab('ops')">Operaciones por día</button>
+  <button class="tab" onclick="showTab('vol')">Volumen USD por día</button>
+  <button class="tab" onclick="showTab('tc')">Tipo de cambio</button>
+  <button class="tab" onclick="showTab('mvol')">Volumen mensual</button>
+</div>
+
+<div id="tab-ops" class="chart-block">
+  <div class="chart-title">Operaciones por día hábil — los tres meses</div>
+  <div class="leg">
+    <span><b style="background:#185FA5"></b>Febrero</span>
+    <span><b style="background:#BA7517"></b>Marzo</span>
+    <span><b style="background:#1D9E75"></b>Abril</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cOps"></canvas></div>
+</div>
+
+<div id="tab-vol" class="chart-block" style="display:none">
+  <div class="chart-title">Volumen USD vendido por día hábil (miles USD)</div>
+  <div class="leg">
+    <span><b style="background:#185FA5"></b>Febrero</span>
+    <span><b style="background:#BA7517"></b>Marzo</span>
+    <span><b style="background:#1D9E75"></b>Abril</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cVol"></canvas></div>
+</div>
+
+<div id="tab-tc" class="chart-block" style="display:none">
+  <div class="chart-title">TC ponderado por USD vs promedio simple</div>
+  <div class="leg">
+    <span><b style="background:#888780"></b>TC simple</span>
+    <span><b style="background:#185FA5"></b>TC ponderado</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cTc"></canvas></div>
+</div>
+
+<div id="tab-mvol" class="chart-block" style="display:none">
+  <div class="chart-title">Volumen mensual total (millones USD)</div>
+  <div class="leg">
+    <span><b style="background:#185FA5"></b>USD vendidos</span>
+    <span><b style="background:#1D9E75"></b>USD comprados</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cMvol"></canvas></div>
+</div>
+
+<!-- Tables -->
+<p class="sec">Comparativo de indicadores</p>
+<div class="two-col">
+  <div class="chart-block">
+    <div class="chart-title">TC simple vs ponderado</div>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
+      <tbody>
+        <tr><td>TC simple</td><td>$17.200</td><td>$17.770</td><td>$17.370</td></tr>
+        <tr class="hl-row"><td>TC ponderado</td><td class="td-blue">$17.195</td><td class="td-blue">$17.766</td><td class="td-blue">$17.365</td></tr>
+        <tr><td>Diferencia / USD</td><td class="td-green">−$0.005</td><td class="td-green">−$0.004</td><td class="td-green">−$0.005</td></tr>
+        <tr><td>Impacto acum. MXN</td><td class="td-green">−$27,750</td><td class="td-green">−$21,532</td><td class="td-green">−$25,715</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="chart-block">
+    <div class="chart-title">Promedios diarios por mes</div>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Métrica</th><th>Febrero</th><th>Marzo</th><th>Abril</th></tr></thead>
+      <tbody>
+        <tr><td>Operaciones / día</td><td>3.0</td><td>3.0</td><td>3.2</td></tr>
+        <tr><td>USD vendidos / día</td><td>308,611</td><td>256,333</td><td>257,150</td></tr>
+        <tr><td>MXN / día</td><td>$5,307,292</td><td>$4,554,151</td><td>$4,493,757</td></tr>
+        <tr><td>USD prom. / op.</td><td>102,870</td><td>85,444</td><td>80,985</td></tr>
+        <tr><td>Días hábiles</td><td>18</td><td>21</td><td>20</td></tr>
+        <tr><td>Total operaciones</td><td>54</td><td>63</td><td>64</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Nota metodológica:</strong> El TC ponderado se calcula como <em>Σ(TC × USD) / Σ(USD)</em> de cada operación del mes, 
+  reflejando el tipo de cambio efectivo real según el tamaño de cada transacción. El TC simple es la media aritmética 
+  de los tipos de cambio sin ponderar por monto. La diferencia acumulada representa el impacto monetario entre 
+  ambos métodos sobre el volumen total mensual.
+</div>
+
+<p class="footer">MABED Distribuciones SA de CV &nbsp;·&nbsp; MDI2208119R1 &nbsp;·&nbsp; Banco Monex Monterrey &nbsp;·&nbsp; 181 comprobantes CFDI &nbsp;·&nbsp; Feb–Abr 2026</p>
+
+<script>
+const feb_ops=[4,4,4,3,4,4,2,2,1,3,1,1,1,2,6,4,4,4];
+const mar_ops=[3,5,1,4,4,4,4,4,3,3,3,2,2,4,2,2,2,3,3,2,4];
+const abr_ops=[3,4,3,3,2,2,3,2,3,3,3,2,3,3,3,2,8,4,3,4];
+const feb_vol=[480,290,250,300,270,240,300,230,345,410,280,180,150,100,420,280,560,470];
+const mar_vol=[220,380,100,230,265,280,350,230,260,250,320,300,230,300,180,250,270,350,325,250,190];
+const abr_vol=[340,500,185,240,140,150,305,235,200,204,60,200,240,150,200,200,550,310,225,330];
+
+const ML=21;
+const pad=a=>{const r=[...a];while(r.length<ML)r.push(null);return r;};
+const labels=Array.from({length:ML},(_,i)=>`D${i+1}`);
+
+const baseOpts={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:{font:{size:10},color:'#888'}},
+          y:{grid:{color:'#E8E7E0'},ticks:{color:'#888'}}}};
+
+new Chart(document.getElementById('cOps'),{
+  type:'bar',data:{labels,datasets:[
+    {label:'Feb',data:pad(feb_ops),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},
+    {label:'Mar',data:pad(mar_ops),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},
+    {label:'Abr',data:pad(abr_ops),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2},
+  ]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,stepSize:1}}}}
+});
+
+new Chart(document.getElementById('cVol'),{
+  type:'bar',data:{labels,datasets:[
+    {label:'Feb',data:pad(feb_vol),backgroundColor:'rgba(24,95,165,.78)',borderRadius:2},
+    {label:'Mar',data:pad(mar_vol),backgroundColor:'rgba(186,117,23,.78)',borderRadius:2},
+    {label:'Abr',data:pad(abr_vol),backgroundColor:'rgba(29,158,117,.78)',borderRadius:2},
+  ]},options:{...baseOpts,scales:{...baseOpts.scales,
+    y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'K'}}}}
+});
+
+new Chart(document.getElementById('cTc'),{
+  type:'bar',
+  data:{labels:['Febrero','Marzo','Abril'],datasets:[
+    {label:'TC simple',   data:[17.200,17.770,17.370],backgroundColor:'rgba(136,135,128,.55)',borderRadius:4},
+    {label:'TC ponderado',data:[17.195,17.766,17.365],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4},
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,
+    y:{min:17.0,max:18.2,grid:{color:'#E8E7E0'},
+       ticks:{color:'#888',callback:v=>'$'+v.toFixed(3)}}},
+    plugins:{...baseOpts.plugins,
+      datalabels:{display:false},
+      tooltip:{callbacks:{label:ctx=>`$${ctx.raw.toFixed(3)}`}}}}
+});
+
+new Chart(document.getElementById('cMvol'),{
+  type:'bar',
+  data:{labels:['Febrero','Marzo','Abril'],datasets:[
+    {label:'USD vendidos', data:[5.555,5.383,5.143],backgroundColor:'rgba(24,95,165,.85)',borderRadius:4},
+    {label:'USD comprados',data:[0,0,0.040],backgroundColor:'rgba(29,158,117,.85)',borderRadius:4},
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,
+    y:{grid:{color:'#E8E7E0'},ticks:{color:'#888',callback:v=>v.toFixed(2)+'M'}}}}
+});
+
+function showTab(t){
+  ['ops','vol','tc','mvol'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display=id===t?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('on',['ops','vol','tc','mvol'][i]===t);
+  });
+}
+</script>
+</body>
+</html>
